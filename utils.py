@@ -1,36 +1,25 @@
-import requests
+import feedparser
 
-BASE_URL = "https://api.semanticscholar.org/graph/v1/paper/search"
+ARXIV_URL = "http://export.arxiv.org/api/query?"
+
 
 def search_papers(topic, limit=5):
 
-    params = {
-        "query": topic,
-        "limit": limit,
-        "fields": "title,abstract,year,authors,citationCount,url"
-    }
+    query = f"search_query=all:{topic}&start=0&max_results={limit}"
 
-    headers = {
-        "User-Agent": "ResearchGapFinder/1.0"
-    }
+    feed = feedparser.parse(ARXIV_URL + query)
 
-    try:
-        response = requests.get(
-            BASE_URL,
-            params=params,
-            headers=headers,
-            timeout=30
-        )
+    papers = []
 
-        print("Status Code:", response.status_code)
-        print("Response:", response.text)
+    for entry in feed.entries:
 
-        response.raise_for_status()
+        papers.append({
+            "title": entry.title,
+            "abstract": entry.summary.replace("\n", " "),
+            "year": entry.published[:4],
+            "authors": [{"name": author.name} for author in entry.authors],
+            "citationCount": "N/A",
+            "url": entry.link
+        })
 
-        data = response.json()
-
-        return data.get("data", [])
-
-    except Exception as e:
-        print("ERROR:", e)
-        raise e
+    return papers
