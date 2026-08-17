@@ -1,5 +1,5 @@
 streamlit
 groq
-requests
 feedparser
+requests
 python-dotenv
