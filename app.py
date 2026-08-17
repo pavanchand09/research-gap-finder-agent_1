@@ -1,3 +1,4 @@
+from utils import search_papers
 import streamlit as st
 from groq import Groq
 
@@ -17,24 +18,45 @@ st.write("Welcome to the AI Research Gap Finder.")
 
 topic = st.text_input("Enter a Research Topic")
 
-if st.button("Test Groq"):
+if st.button("Search Papers"):
 
     if topic == "":
         st.warning("Please enter a topic.")
     else:
 
-        with st.spinner("Connecting to Groq..."):
+        with st.spinner("Searching Papers..."):
 
-            response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"Give one sentence about {topic}."
-                    }
-                ]
-            )
+            papers = search_papers(topic)
 
-        st.success("Connected Successfully!")
+        if len(papers) == 0:
+            st.error("No papers found.")
+        else:
 
-        st.write(response.choices[0].message.content)
+            st.success(f"{len(papers)} papers found.")
+
+            for i, paper in enumerate(papers, 1):
+
+                st.subheader(f"{i}. {paper.get('title','No Title')}")
+
+                st.write("**Year:**", paper.get("year", "N/A"))
+
+                st.write("**Citations:**", paper.get("citationCount", 0))
+
+                authors = paper.get("authors", [])
+
+                if authors:
+                    names = ", ".join(
+                        [author["name"] for author in authors]
+                    )
+                    st.write("**Authors:**", names)
+
+                st.write("**Abstract:**")
+
+                st.write(
+                    paper.get(
+                        "abstract",
+                        "No abstract available."
+                    )
+                )
+
+                st.divider()
