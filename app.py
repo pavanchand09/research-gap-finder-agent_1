@@ -26,7 +26,7 @@ if st.button("Analyze"):
         papers = search_papers(topic)
 
     if not papers:
-        st.error("No papers found.")
+        st.error("No papers found or the API request failed. Check the Streamlit logs.")
         st.stop()
 
     st.header("Research Papers")
