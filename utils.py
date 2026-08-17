@@ -1,12 +1,20 @@
 import feedparser
+from urllib.parse import quote
 
 ARXIV_URL = "https://export.arxiv.org/api/query"
 
 def search_papers(topic, limit=5):
 
-    query = f"search_query=all:{topic}&start=0&max_results={limit}"
+    encoded_topic = quote(topic)
 
-    feed = feedparser.parse(f"{ARXIV_URL}?{query}")
+    url = (
+        f"{ARXIV_URL}"
+        f"?search_query=all:{encoded_topic}"
+        f"&start=0"
+        f"&max_results={limit}"
+    )
+
+    feed = feedparser.parse(url)
 
     papers = []
 
