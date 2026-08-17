@@ -61,3 +61,43 @@ if st.button("Search Papers"):
                 )
 
                 st.divider()
+    paper_text = ""
+
+for paper in papers:
+
+    title = paper.get("title", "")
+
+    abstract = paper.get("abstract", "")
+
+    year = paper.get("year", "")
+
+    paper_text += f"""
+
+Title: {title}
+
+Year: {year}
+
+Abstract:
+{abstract}
+
+"""
+prompt = research_gap_prompt(topic, paper_text)
+with st.spinner("Analyzing Research Gaps..."):
+
+    response = client.chat.completions.create(
+
+        model="llama-3.3-70b-versatile",
+
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+
+    )
+
+analysis = response.choices[0].message.content
+st.header("Research Gap Analysis")
+
+st.markdown(analysis)
