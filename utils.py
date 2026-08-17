@@ -32,5 +32,5 @@ def search_papers(topic, limit=5):
         return data.get("data", [])
 
     except Exception as e:
-        print("Error:", e)
-        return []
+        print("ERROR:", e)
+        raise e
