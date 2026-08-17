@@ -1,8 +1,8 @@
-from report import download_report
-from prompts import research_gap_prompt
-from utils import search_papers
 import streamlit as st
 from groq import Groq
+from utils import search_papers
+from prompts import research_gap_prompt
+from report import download_report
 
 st.set_page_config(
     page_title="Research Gap Finder",
@@ -10,70 +10,41 @@ st.set_page_config(
     layout="wide"
 )
 
-client = Groq(
-    api_key=st.secrets["GROQ_API_KEY"]
-)
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 st.title("🔍 AI Research Gap Finder")
 
-st.write("Welcome to the AI Research Gap Finder.")
+topic = st.text_input("Enter Research Topic")
 
-topic = st.text_input("Enter a Research Topic")
+if st.button("Analyze"):
 
-if st.button("Search Papers"):
+    if not topic:
+        st.warning("Please enter a research topic.")
+        st.stop()
 
-    if topic == "":
-        st.warning("Please enter a topic.")
-    else:
+    with st.spinner("Searching research papers..."):
+        papers = search_papers(topic)
 
-        with st.spinner("Searching Papers..."):
+    if not papers:
+        st.error("No papers found.")
+        st.stop()
 
-            papers = search_papers(topic)
+    st.header("Research Papers")
 
-        if len(papers) == 0:
-            st.error("No papers found.")
-        else:
-
-            st.success(f"{len(papers)} papers found.")
-
-            for i, paper in enumerate(papers, 1):
-
-                st.subheader(f"{i}. {paper.get('title','No Title')}")
-
-                st.write("**Year:**", paper.get("year", "N/A"))
-
-                st.write("**Citations:**", paper.get("citationCount", 0))
-
-                authors = paper.get("authors", [])
-
-                if authors:
-                    names = ", ".join(
-                        [author["name"] for author in authors]
-                    )
-                    st.write("**Authors:**", names)
-
-                st.write("**Abstract:**")
-
-                st.write(
-                    paper.get(
-                        "abstract",
-                        "No abstract available."
-                    )
-                )
-
-                st.divider()
     paper_text = ""
 
-for paper in papers:
+    for i, paper in enumerate(papers, 1):
 
-    title = paper.get("title", "")
+        title = paper.get("title", "No Title")
+        abstract = paper.get("abstract", "No Abstract")
+        year = paper.get("year", "N/A")
 
-    abstract = paper.get("abstract", "")
+        st.subheader(f"{i}. {title}")
+        st.write(f"**Year:** {year}")
+        st.write(abstract)
+        st.divider()
 
-    year = paper.get("year", "")
-
-    paper_text += f"""
-
+        paper_text += f"""
 Title: {title}
 
 Year: {year}
@@ -82,24 +53,25 @@ Abstract:
 {abstract}
 
 """
-prompt = research_gap_prompt(topic, paper_text)
-with st.spinner("Analyzing Research Gaps..."):
 
-    response = client.chat.completions.create(
+    prompt = research_gap_prompt(topic, paper_text)
 
-        model="llama-3.3-70b-versatile",
+    with st.spinner("Finding Research Gaps..."):
 
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
 
-    )
+    analysis = response.choices[0].message.content
 
-analysis = response.choices[0].message.content
-st.header("Research Gap Analysis")
+    st.header("Research Gap Analysis")
 
-st.markdown(analysis)
-download_report(topic, analysis)
+    st.markdown(analysis)
+
+    download_report(topic, analysis)
