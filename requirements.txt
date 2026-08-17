@@ -1,4 +1,5 @@
 streamlit
-groq>=0.31.0
+groq
 requests
+feedparser
 python-dotenv
