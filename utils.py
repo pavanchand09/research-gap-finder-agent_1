@@ -1,18 +1,16 @@
 import feedparser
 
-ARXIV_URL = "http://export.arxiv.org/api/query?"
-
+ARXIV_URL = "https://export.arxiv.org/api/query"
 
 def search_papers(topic, limit=5):
 
     query = f"search_query=all:{topic}&start=0&max_results={limit}"
 
-    feed = feedparser.parse(ARXIV_URL + query)
+    feed = feedparser.parse(f"{ARXIV_URL}?{query}")
 
     papers = []
 
     for entry in feed.entries:
-
         papers.append({
             "title": entry.title,
             "abstract": entry.summary.replace("\n", " "),
