@@ -1,3 +1,4 @@
+from report import download_report
 from prompts import research_gap_prompt
 from utils import search_papers
 import streamlit as st
@@ -101,3 +102,4 @@ analysis = response.choices[0].message.content
 st.header("Research Gap Analysis")
 
 st.markdown(analysis)
+download_report(topic, analysis)
